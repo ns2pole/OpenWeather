@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void callOpenWeatherApi(View view) {
-        String requestUrl = "http://api.openweathermap.org/data/2.5/forecast?q=tsu,jp&APPID=6eebb97b538203a912ee4a0cfdad0299";
+        String requestUrl = "http://api.openweathermap.org/data/2.5/forecast?q=tsu,jp&APPID=[your_key]";
         try {
             httpRequest(requestUrl);
         } catch (Exception e) {
