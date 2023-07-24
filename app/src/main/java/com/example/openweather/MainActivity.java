@@ -9,17 +9,11 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
-
 import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.OkHttpClient;
@@ -71,52 +65,25 @@ public class MainActivity extends AppCompatActivity {
 
     private String parseResponseBody(String responseBody) {
         try {
+
             JSONObject ob = new JSONObject(responseBody);
             String result = "";
-            for (int i = 0; i < ob.getJSONArray("list").length(); i++) {
-                String dateStr = ob.getJSONArray("list")
-                        .getJSONObject(i).getString("dt_txt");
-                String list1 = ob.getJSONArray("list")
-                        .getJSONObject(i).getJSONArray("weather")
-                        .getJSONObject(0).getString("description");
-                DateTimeFormatter formatter = null;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                for (int i = 0; i < ob.getJSONArray("list").length(); i++) {
+                    String dateStr = ob.getJSONArray("list")
+                            .getJSONObject(i).getString("dt_txt");
+                    String list1 = ob.getJSONArray("list")
+                            .getJSONObject(i).getJSONArray("weather")
+                            .getJSONObject(0).getString("description");
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                    ZonedDateTime utcDateTime = ZonedDateTime.parse(dateStr, formatter.withZone(ZoneId.of("UTC")));
+//                    System.out.println("UTC DateTime: " + utcDateTime);
+                    ZonedDateTime jstDateTime = utcDateTime.withZoneSameInstant(ZoneId.of("Asia/Tokyo"));
+                    LocalDate date = jstDateTime.toLocalDate();
+                    LocalTime time = jstDateTime.toLocalTime();
+                    result += date.toString() + "  " + time.toString() + " :  [ " + list1 + " ]\n\n";
                 }
-
-                // UTCの日付・時間に変換
-                ZonedDateTime utcDateTime = null;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    utcDateTime = ZonedDateTime.parse(dateStr, formatter.withZone(ZoneId.of("UTC")));
-                }
-
-                System.out.println("UTC DateTime: " + utcDateTime);
-
-                // JSTに変換
-                ZonedDateTime jstDateTime = null;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    jstDateTime = utcDateTime.withZoneSameInstant(ZoneId.of("Asia/Tokyo"));
-                }
-
-                LocalDate date = null;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    date = jstDateTime.toLocalDate();
-                }
-
-                LocalTime time = null;
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    time = jstDateTime.toLocalTime();
-                }
-
-//                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH");
-//                TimeZone tz = TimeZone.getTimeZone("JST");
-//                dateFormat.setTimeZone(tz);
-//                Log.d("tag", dateStr);
-//                Date date = dateFormat.parse(dateStr);
-//                String str = new SimpleDateFormat("M/d HH:mm").format(date).toString();
-                result += date.toString() + "  " + time.toString() + " :  [ " + list1 + " ]\n\n";
             }
-
             return result;
         } catch (JSONException e) {
             e.printStackTrace();
